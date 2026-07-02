@@ -5,6 +5,9 @@ function WatchNumbersGoUp.build(tab, ui, config)
     local Workspace = game:GetService("Workspace")
     local player = Players.LocalPlayer
 
+    ---------------------------------------------------------------------
+    -- UI
+    ---------------------------------------------------------------------
     local Title = Instance.new("TextLabel")
     Title.Size = UDim2.new(1, -20, 0, 32)
     Title.Position = UDim2.new(0, 10, 0, 10)
@@ -48,6 +51,9 @@ function WatchNumbersGoUp.build(tab, ui, config)
         AutoBtn.Text = autoUpgrade and "Auto Upgrade: ON" or "Auto Upgrade: OFF"
     end)
 
+    ---------------------------------------------------------------------
+    -- Character helpers
+    ---------------------------------------------------------------------
     local function getCharacter()
         local char = player.Character
         if not char or not char.Parent then
@@ -58,38 +64,41 @@ function WatchNumbersGoUp.build(tab, ui, config)
 
     local function getHRP()
         local char = getCharacter()
-        local hrp = char:FindFirstChild("HumanoidRootPart") or char:WaitForChild("HumanoidRootPart")
-        return hrp
+        return char:FindFirstChild("HumanoidRootPart") or char:WaitForChild("HumanoidRootPart")
     end
 
+    ---------------------------------------------------------------------
+    -- Upgrade model scanning (supports millions of upgrades)
+    ---------------------------------------------------------------------
     local function getUpgradeModels()
         local folder = Workspace:FindFirstChild("UpgradeModels")
         if not folder then return {} end
 
         local list = {}
         for _, m in ipairs(folder:GetChildren()) do
-            if m:IsA("Model") and m.Name:match("^NumMulti_00%d+") then
+            if m:IsA("Model") and m.Name:match("^NumMulti_%d+$") then
                 table.insert(list, m)
             end
         end
 
         table.sort(list, function(a, b)
-            local na = tonumber(a.Name:match("NumMulti_00(%d+)")) or 0
-            local nb = tonumber(b.Name:match("NumMulti_00(%d+)")) or 0
+            local na = tonumber(a.Name:match("NumMulti_(%d+)")) or 0
+            local nb = tonumber(b.Name:match("NumMulti_(%d+)")) or 0
             return na < nb
         end)
 
         return list
     end
 
+    ---------------------------------------------------------------------
+    -- CostLabel finder
+    ---------------------------------------------------------------------
     local function getCostLabel(model)
         local display = model:FindFirstChild("Display")
         if not display then return nil end
 
         local sg = display:FindFirstChildOfClass("SurfaceGui")
-        if not sg then
-            sg = display:FindFirstChild("SurfaceGui")
-        end
+        if not sg then sg = display:FindFirstChild("SurfaceGui") end
         if not sg then return nil end
 
         local frame = sg:FindFirstChild("Frame")
@@ -106,14 +115,16 @@ function WatchNumbersGoUp.build(tab, ui, config)
         return nil
     end
 
+    ---------------------------------------------------------------------
+    -- Button finder
+    ---------------------------------------------------------------------
     local function getButton(model)
-        local btn = model:FindFirstChild("Button", true)
-        if btn and btn:IsA("BasePart") then
-            return btn
-        end
-        return nil
+        return model:FindFirstChild("Button", true)
     end
 
+    ---------------------------------------------------------------------
+    -- Main automation loop
+    ---------------------------------------------------------------------
     task.spawn(function()
         while true do
             if autoUpgrade then
