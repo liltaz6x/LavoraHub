@@ -1,6 +1,5 @@
 local TabsCore = {}
 
--- Only one supported game
 local SupportedGames = {
     ["72016039587124"] = "BallGame",
 }
@@ -46,7 +45,6 @@ local function createSidebarButton(ui, name, order, callback)
 end
 
 function TabsCore.init(ui, config)
-    -- Load normal tabs
     local HomeModule     = _G.LavoraRequire("Tabs/Home.lua")
     local ToolsModule    = _G.LavoraRequire("Tabs/Tools.lua")
     local SettingsModule = _G.LavoraRequire("Tabs/Settings.lua")
@@ -60,7 +58,6 @@ function TabsCore.init(ui, config)
     ToolsModule.build(ToolsTab, ui, config)
     SettingsModule.build(SettingsTab, ui, config)
 
-    -- Sidebar buttons
     createSidebarButton(ui, "Home", 1, function() showTab(ui, "Home") end)
     createSidebarButton(ui, "Tools", 2, function() showTab(ui, "Tools") end)
     createSidebarButton(ui, "Settings", 3, function() showTab(ui, "Settings") end)
@@ -72,11 +69,9 @@ function TabsCore.init(ui, config)
     local gameModuleName = SupportedGames[placeId]
 
     if gameModuleName then
-        -- Load game module
         local modulePath = "Games/" .. gameModuleName .. ".lua"
         local GameModule = _G.LavoraRequire(modulePath)
 
-        -- Get real game name
         local MarketplaceService = game:GetService("MarketplaceService")
         local ok, info = pcall(function()
             return MarketplaceService:GetProductInfo(game.PlaceId)
@@ -84,16 +79,13 @@ function TabsCore.init(ui, config)
 
         local realName = ok and info.Name or "Ball Game"
 
-        -- Sidebar button becomes the game name
         createSidebarButton(ui, realName, 4, function()
             showTab(ui, "Game")
         end)
 
-        -- Build game UI
         GameModule.build(GameTab, ui, config)
 
     else
-        -- No supported game detected
         createSidebarButton(ui, "Game", 4, function()
             showTab(ui, "Game")
         end)

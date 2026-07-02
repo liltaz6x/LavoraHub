@@ -6,7 +6,6 @@ Theme.Default = {
     SidebarColor = Color3.fromRGB(10, 10, 18),
     TextColor = Color3.fromRGB(230, 230, 240),
     Scale = 1,
-    PerformanceMode = false,
 }
 
 return Theme

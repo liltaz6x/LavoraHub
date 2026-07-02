@@ -1,12 +1,6 @@
--- Ball Game Module (Auto Dropper + Auto Upgrader)
--- EXACT logic we used before, rewritten for your new modular UI system
-
 local BallGame = {}
 
 function BallGame.build(tab, ui, config)
-    ---------------------------------------------------------------------
-    -- UI HEADER
-    ---------------------------------------------------------------------
     local Title = Instance.new("TextLabel")
     Title.Size = UDim2.new(1, -20, 0, 32)
     Title.Position = UDim2.new(0, 10, 0, 10)
@@ -18,9 +12,6 @@ function BallGame.build(tab, ui, config)
     Title.TextXAlignment = Enum.TextXAlignment.Left
     Title.Parent = tab
 
-    ---------------------------------------------------------------------
-    -- GAME SERVICES
-    ---------------------------------------------------------------------
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
     local Workspace = game:GetService("Workspace")
 
@@ -28,17 +19,9 @@ function BallGame.build(tab, ui, config)
     local PurchaseUpgradeEvent = ReplicatedStorage:WaitForChild("PurchaseUpgradeEvent")
     local UpgradeDefs = require(ReplicatedStorage:WaitForChild("UpgradeDefs"))
 
-    ---------------------------------------------------------------------
-    -- TOGGLES
-    ---------------------------------------------------------------------
     local autoDrop = false
     local autoUpgrade = false
 
-    ---------------------------------------------------------------------
-    -- UI BUTTONS
-    ---------------------------------------------------------------------
-
-    -- Auto Dropper Button
     local DropBtn = Instance.new("TextButton")
     DropBtn.Size = UDim2.new(0, 200, 0, 32)
     DropBtn.Position = UDim2.new(0, 10, 0, 60)
@@ -55,7 +38,6 @@ function BallGame.build(tab, ui, config)
         DropBtn.Text = autoDrop and "Auto Dropper: ON" or "Auto Dropper: OFF"
     end)
 
-    -- Auto Upgrader Button
     local UpgradeBtn = Instance.new("TextButton")
     UpgradeBtn.Size = UDim2.new(0, 200, 0, 32)
     UpgradeBtn.Position = UDim2.new(0, 10, 0, 100)
@@ -72,9 +54,6 @@ function BallGame.build(tab, ui, config)
         UpgradeBtn.Text = autoUpgrade and "Auto Upgrade: ON" or "Auto Upgrade: OFF"
     end)
 
-    ---------------------------------------------------------------------
-    -- AUTO DROPPER (EXACT WORKING LOGIC)
-    ---------------------------------------------------------------------
     task.spawn(function()
         local ballsFolder = Workspace:WaitForChild("LocalBalls")
         local targetCFrame = CFrame.new(25.2, 34.25, -50)
@@ -93,9 +72,6 @@ function BallGame.build(tab, ui, config)
         end
     end)
 
-    ---------------------------------------------------------------------
-    -- AUTO UPGRADER (EXACT WORKING LOGIC)
-    ---------------------------------------------------------------------
     task.spawn(function()
         while true do
             if autoUpgrade then
