@@ -30,6 +30,7 @@ local function createSidebarButton(ui, name, order, callback)
     btn.TextSize = 14
     btn.TextColor3 = ui.Config.TextColor
     btn.TextXAlignment = Enum.TextXAlignment.Left
+    btn.TextWrapped = true
     btn.Parent = ui.Sidebar
 
     btn.MouseButton1Click:Connect(callback)
@@ -60,11 +61,9 @@ function TabsCore.init(ui, config)
 
     if gameModuleName then
         local GameModule = _G.LavoraRequire("Games/" .. gameModuleName .. ".lua")
-
         createSidebarButton(ui, "Ball Game", 4, function()
             showTab(ui, "Game")
         end)
-
         GameModule.build(GameTab, ui, config)
     else
         createSidebarButton(ui, "Game", 4, function()

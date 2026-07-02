@@ -30,6 +30,7 @@ function BallGame.build(tab, ui, config)
     DropBtn.Font = Enum.Font.GothamBold
     DropBtn.TextSize = 14
     DropBtn.TextColor3 = Color3.fromRGB(10, 10, 15)
+    DropBtn.TextWrapped = true
     Instance.new("UICorner", DropBtn).CornerRadius = UDim.new(0, 8)
     DropBtn.Parent = tab
 
@@ -46,6 +47,7 @@ function BallGame.build(tab, ui, config)
     UpgradeBtn.Font = Enum.Font.GothamBold
     UpgradeBtn.TextSize = 14
     UpgradeBtn.TextColor3 = Color3.fromRGB(10, 10, 15)
+    UpgradeBtn.TextWrapped = true
     Instance.new("UICorner", UpgradeBtn).CornerRadius = UDim.new(0, 8)
     UpgradeBtn.Parent = tab
 
