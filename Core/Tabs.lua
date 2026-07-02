@@ -10,7 +10,7 @@ local function createTabFrame(ui, id)
     frame.Size = UDim2.new(1, 0, 1, 0)
     frame.BackgroundTransparency = 1
     frame.Visible = false
-    frame.Parent = ui.ContentFrame
+    frame.Parent = ui.TabsFolder
     return frame
 end
 
@@ -31,13 +31,6 @@ local function createSidebarButton(ui, name, order, callback)
     btn.TextColor3 = ui.Config.TextColor
     btn.TextXAlignment = Enum.TextXAlignment.Left
     btn.Parent = ui.Sidebar
-
-    btn.MouseEnter:Connect(function()
-        btn.TextColor3 = ui.Config.AccentColor
-    end)
-    btn.MouseLeave:Connect(function()
-        btn.TextColor3 = ui.Config.TextColor
-    end)
 
     btn.MouseButton1Click:Connect(callback)
 
@@ -62,44 +55,21 @@ function TabsCore.init(ui, config)
     createSidebarButton(ui, "Tools", 2, function() showTab(ui, "Tools") end)
     createSidebarButton(ui, "Settings", 3, function() showTab(ui, "Settings") end)
 
-    ---------------------------------------------------------------------
-    -- GAME AUTO-DETECTION
-    ---------------------------------------------------------------------
     local placeId = tostring(game.PlaceId)
     local gameModuleName = SupportedGames[placeId]
 
     if gameModuleName then
-        local modulePath = "Games/" .. gameModuleName .. ".lua"
-        local GameModule = _G.LavoraRequire(modulePath)
+        local GameModule = _G.LavoraRequire("Games/" .. gameModuleName .. ".lua")
 
-        local MarketplaceService = game:GetService("MarketplaceService")
-        local ok, info = pcall(function()
-            return MarketplaceService:GetProductInfo(game.PlaceId)
-        end)
-
-        local realName = ok and info.Name or "Ball Game"
-
-        createSidebarButton(ui, realName, 4, function()
+        createSidebarButton(ui, "Ball Game", 4, function()
             showTab(ui, "Game")
         end)
 
         GameModule.build(GameTab, ui, config)
-
     else
         createSidebarButton(ui, "Game", 4, function()
             showTab(ui, "Game")
         end)
-
-        local Label = Instance.new("TextLabel")
-        Label.Size = UDim2.new(1, -20, 0, 32)
-        Label.Position = UDim2.new(0, 10, 0, 10)
-        Label.BackgroundTransparency = 1
-        Label.Font = Enum.Font.GothamBold
-        Label.TextSize = 20
-        Label.TextColor3 = ui.Config.TextColor
-        Label.Text = "No supported game detected"
-        Label.TextXAlignment = Enum.TextXAlignment.Left
-        Label.Parent = GameTab
     end
 
     showTab(ui, "Home")
