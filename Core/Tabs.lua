@@ -2,6 +2,7 @@ local TabsCore = {}
 
 local SupportedGames = {
     ["72016039587124"] = "BallGame",
+    ["78491332555415"] = "WatchNumbersGoUp",
 }
 
 local function createTabFrame(ui, id)
@@ -60,10 +61,18 @@ function TabsCore.init(ui, config)
     local gameModuleName = SupportedGames[placeId]
 
     if gameModuleName then
+        local MarketplaceService = game:GetService("MarketplaceService")
+        local ok, info = pcall(function()
+            return MarketplaceService:GetProductInfo(game.PlaceId)
+        end)
+        local displayName = ok and info.Name or gameModuleName
+
         local GameModule = _G.LavoraRequire("Games/" .. gameModuleName .. ".lua")
-        createSidebarButton(ui, "Ball Game", 4, function()
+
+        createSidebarButton(ui, displayName, 4, function()
             showTab(ui, "Game")
         end)
+
         GameModule.build(GameTab, ui, config)
     else
         createSidebarButton(ui, "Game", 4, function()
