@@ -1,9 +1,18 @@
--- Paint My Keyboard module (stub)
+local PMK = {}
 
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
+function PMK.build(tab, ui, config)
+    local Title = Instance.new("TextLabel")
+    Title.Size = UDim2.new(1, -20, 0, 32)
+    Title.Position = UDim2.new(0, 10, 0, 10)
+    Title.BackgroundTransparency = 1
+    Title.Font = Enum.Font.GothamBold
+    Title.TextSize = 20
+    Title.TextColor3 = config.TextColor
+    Title.Text = "Paint My Keyboard"
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+    Title.Parent = tab
 
--- Put your auto-paint / auto-refill logic here
--- This file exists so the modular structure is ready.
+    -- Auto paint logic here
+end
 
-return {}
+return PMK
