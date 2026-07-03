@@ -1,10 +1,5 @@
--- Lavora Hub Loader
+local Rayfield = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Rayfield/main/source"))()
 
-local BASE_URL = "https://raw.githubusercontent.com/liltaz6x/LavoraHub/main/"
+local CoreInit = require(script.Core.Init)
 
-_G.LavoraRequire = function(path)
-    local url = BASE_URL .. path
-    return loadstring(game:HttpGet(url))()
-end
-
-return _G.LavoraRequire("Core/Init.lua")
+CoreInit.start(Rayfield)

@@ -1,133 +1,113 @@
 local WatchNumbersGoUp = {}
 
+local Utils = require(script.Parent.Parent.Core.Utils)
+
 function WatchNumbersGoUp.build(tab, ui, config)
+    Utils.fullRefreshFlag()
+
     local Players = game:GetService("Players")
     local Workspace = game:GetService("Workspace")
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
-    local player = Players.LocalPlayer
 
-    ---------------------------------------------------------------------
-    -- REMOTES
-    ---------------------------------------------------------------------
-    local BuyUpgrade = ReplicatedStorage.Objects.Remotes.Upgrades.BuyUpgrade
+    local SAFE_KEYWORDS = {
+        "upgrade","buy","roll","rune","gem","merge","combine","equip",
+        "prestige","challenge","currency","rebirth","collect","farm",
+        "forge","craft","multiplier","luck","stats"
+    }
 
-    ---------------------------------------------------------------------
-    -- UI
-    ---------------------------------------------------------------------
-    local Title = Instance.new("TextLabel")
-    Title.Size = UDim2.new(1, -20, 0, 32)
-    Title.Position = UDim2.new(0, 10, 0, 10)
-    Title.BackgroundTransparency = 1
-    Title.Font = Enum.Font.GothamBold
-    Title.TextSize = 20
-    Title.TextColor3 = config.TextColor
-    Title.Text = "Watch Numbers Go Up"
-    Title.TextXAlignment = Enum.TextXAlignment.Left
-    Title.Parent = tab
+    local CATEGORY_MAP = {
+        upgrades = "Upgrade",
+        runes = "Runes",
+        gems = "Gems",
+        prestige = "Prestige",
+        challenges = "Challenges",
+        currency = "Currency",
+        rebirth = "Rebirth",
+        items = "Items",
+        farm = "Farm",
+        collect = "Collect",
+        crafting = "Crafting",
+        forging = "Forging",
+        multiplier = "Multiplier",
+        luck = "Luck",
+        stats = "Stats"
+    }
 
-    local Info = Instance.new("TextLabel")
-    Info.Size = UDim2.new(1, -20, 0, 24)
-    Info.Position = UDim2.new(0, 10, 0, 50)
-    Info.BackgroundTransparency = 1
-    Info.Font = Enum.Font.Gotham
-    Info.TextSize = 16
-    Info.TextColor3 = config.TextColor
-    Info.TextWrapped = true
-    Info.TextXAlignment = Enum.TextXAlignment.Left
-    Info.Text = "Auto-upgrades NumMulti platforms by firing BuyUpgrade until CostLabel shows [MAX]."
-    Info.Parent = tab
+    local function scanForRemotes(root)
+        local found = {}
+        local function scan(obj)
+            for _, child in ipairs(obj:GetChildren()) do
+                if child:IsA("RemoteEvent") or child:IsA("RemoteFunction") then
+                    table.insert(found, child)
+                end
+                scan(child)
+            end
+        end
+        scan(root)
+        return found
+    end
 
-    local AutoBtn = Instance.new("TextButton")
-    AutoBtn.Size = UDim2.new(0, 260, 0, 40)
-    AutoBtn.Position = UDim2.new(0, 10, 0, 90)
-    AutoBtn.BackgroundColor3 = config.AccentColor
-    AutoBtn.Text = "Auto Upgrade: OFF"
-    AutoBtn.Font = Enum.Font.GothamBold
-    AutoBtn.TextSize = 14
-    AutoBtn.TextColor3 = Color3.fromRGB(10, 10, 15)
-    AutoBtn.TextWrapped = true
-    AutoBtn.TextXAlignment = Enum.TextXAlignment.Left
-    Instance.new("UICorner", AutoBtn).CornerRadius = UDim.new(0, 8)
-    AutoBtn.Parent = tab
+    local AllRemotes = scanForRemotes(game)
 
-    local autoUpgrade = false
+    local function detectCategory(remote)
+        local name = remote.Name:lower()
+        local folder = remote.Parent and remote.Parent.Name:lower() or ""
 
-    AutoBtn.MouseButton1Click:Connect(function()
-        autoUpgrade = not autoUpgrade
-        AutoBtn.Text = autoUpgrade and "Auto Upgrade: ON" or "Auto Upgrade: OFF"
-    end)
-
-    ---------------------------------------------------------------------
-    -- Upgrade model scanning (supports millions of upgrades)
-    ---------------------------------------------------------------------
-    local function getUpgradeModels()
-        local folder = Workspace:FindFirstChild("UpgradeModels")
-        if not folder then return {} end
-
-        local list = {}
-        for _, m in ipairs(folder:GetChildren()) do
-            if m:IsA("Model") and m.Name:match("^NumMulti_%d+$") then
-                table.insert(list, m)
+        for folderKey, categoryName in pairs(CATEGORY_MAP) do
+            if folder:find(folderKey) then
+                return categoryName
             end
         end
 
-        table.sort(list, function(a, b)
-            local na = tonumber(a.Name:match("NumMulti_(%d+)")) or 0
-            local nb = tonumber(b.Name:match("NumMulti_(%d+)")) or 0
-            return na < nb
-        end)
-
-        return list
-    end
-
-    ---------------------------------------------------------------------
-    -- CostLabel finder
-    ---------------------------------------------------------------------
-    local function getCostLabel(model)
-        local display = model:FindFirstChild("Display")
-        if not display then return nil end
-
-        local sg = display:FindFirstChildOfClass("SurfaceGui")
-        if not sg then sg = display:FindFirstChild("SurfaceGui") end
-        if not sg then return nil end
-
-        local frame = sg:FindFirstChild("Frame")
-        if not frame then return nil end
-
-        local inner = frame:FindFirstChild("Frame")
-        if not inner then return nil end
-
-        local label = inner:FindFirstChild("CostLabel")
-        if label and label:IsA("TextLabel") then
-            return label
+        for _, keyword in ipairs(SAFE_KEYWORDS) do
+            if name:find(keyword) then
+                return CATEGORY_MAP[keyword] or keyword
+            end
         end
 
         return nil
     end
 
-    ---------------------------------------------------------------------
-    -- Main automation loop (trigger version)
-    ---------------------------------------------------------------------
-    task.spawn(function()
-        while true do
-            if autoUpgrade then
-                local upgrades = getUpgradeModels()
+    local Categories = {}
+    for _, remote in ipairs(AllRemotes) do
+        local category = detectCategory(remote)
+        if category then
+            Categories[category] = Categories[category] or {}
+            table.insert(Categories[category], remote)
+        end
+    end
 
-                for _, model in ipairs(upgrades) do
-                    local costLabel = getCostLabel(model)
-                    local upgradeId = model.Name
+    ui.Label(tab, "Watch Numbers Go Up — Automation")
 
-                    if costLabel and costLabel.Text ~= "[MAX]" then
-                        -- spam BuyUpgrade until maxed
-                        while autoUpgrade and costLabel and costLabel.Text ~= "[MAX]" do
-                            BuyUpgrade:FireServer(upgradeId)
-                            task.wait(0.15)
+    local autoEverything = false
+    ui.Toggle(tab, "Auto Everything", false, function(v)
+        autoEverything = v
+    end)
+
+    local CategoryStates = {}
+    for categoryName, remotes in pairs(Categories) do
+        CategoryStates[categoryName] = false
+        ui.Toggle(tab, "Auto " .. categoryName, false, function(v)
+            CategoryStates[categoryName] = v
+        end)
+    end
+
+    Utils.safeSpawn(function()
+        while _G.LavoraRunning do
+            for categoryName, remotes in pairs(Categories) do
+                if autoEverything or CategoryStates[categoryName] then
+                    for _, remote in ipairs(remotes) do
+                        if remote:IsA("RemoteEvent") then
+                            remote:FireServer()
+                        elseif remote:IsA("RemoteFunction") then
+                            pcall(function()
+                                remote:InvokeServer()
+                            end)
                         end
                     end
                 end
             end
-
-            task.wait(0.2)
+            task.wait(0.05)
         end
     end)
 end

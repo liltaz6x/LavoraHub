@@ -1,14 +1,18 @@
-local Theme = _G.LavoraRequire("Core/Theme.lua")
-local Utils = _G.LavoraRequire("Core/Utils.lua")
-local UI    = _G.LavoraRequire("Core/UI.lua")
-local Tabs  = _G.LavoraRequire("Core/Tabs.lua")
+local Init = {}
 
-local config = Utils.loadConfig(Theme.Default)
-local uiState = UI.create(config)
+function Init.start(Rayfield)
+    local Theme = require(script.Parent.Theme)
+    local Tabs = require(script.Parent.Tabs)
 
-Tabs.init(uiState, config)
+    local Window = Rayfield:CreateWindow({
+        Title = "Lavora Hub",
+        Theme = Theme.getTheme(),
+        LoadingTitle = "Lavora Hub",
+        LoadingSubtitle = "by Taz",
+        DisableRayfieldPrompts = true
+    })
 
-return {
-    UI = uiState,
-    Config = config,
-}
+    Tabs.build(Rayfield, Window)
+end
+
+return Init
