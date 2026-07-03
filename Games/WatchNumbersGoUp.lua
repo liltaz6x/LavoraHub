@@ -3,7 +3,13 @@ local WatchNumbersGoUp = {}
 function WatchNumbersGoUp.build(tab, ui, config)
     local Players = game:GetService("Players")
     local Workspace = game:GetService("Workspace")
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
     local player = Players.LocalPlayer
+
+    ---------------------------------------------------------------------
+    -- REMOTES
+    ---------------------------------------------------------------------
+    local BuyUpgrade = ReplicatedStorage.Objects.Remotes.Upgrades.BuyUpgrade
 
     ---------------------------------------------------------------------
     -- UI
@@ -28,7 +34,7 @@ function WatchNumbersGoUp.build(tab, ui, config)
     Info.TextColor3 = config.TextColor
     Info.TextWrapped = true
     Info.TextXAlignment = Enum.TextXAlignment.Left
-    Info.Text = "Auto-upgrades NumMulti platforms by teleporting to each Button until CostLabel shows [MAX]."
+    Info.Text = "Auto-upgrades NumMulti platforms by firing BuyUpgrade until CostLabel shows [MAX]."
     Info.Parent = tab
 
     local AutoBtn = Instance.new("TextButton")
@@ -50,22 +56,6 @@ function WatchNumbersGoUp.build(tab, ui, config)
         autoUpgrade = not autoUpgrade
         AutoBtn.Text = autoUpgrade and "Auto Upgrade: ON" or "Auto Upgrade: OFF"
     end)
-
-    ---------------------------------------------------------------------
-    -- Character helpers
-    ---------------------------------------------------------------------
-    local function getCharacter()
-        local char = player.Character
-        if not char or not char.Parent then
-            char = player.CharacterAdded:Wait()
-        end
-        return char
-    end
-
-    local function getHRP()
-        local char = getCharacter()
-        return char:FindFirstChild("HumanoidRootPart") or char:WaitForChild("HumanoidRootPart")
-    end
 
     ---------------------------------------------------------------------
     -- Upgrade model scanning (supports millions of upgrades)
@@ -116,30 +106,22 @@ function WatchNumbersGoUp.build(tab, ui, config)
     end
 
     ---------------------------------------------------------------------
-    -- Button finder
-    ---------------------------------------------------------------------
-    local function getButton(model)
-        return model:FindFirstChild("Button", true)
-    end
-
-    ---------------------------------------------------------------------
-    -- Main automation loop
+    -- Main automation loop (trigger version)
     ---------------------------------------------------------------------
     task.spawn(function()
         while true do
             if autoUpgrade then
-                local hrp = getHRP()
                 local upgrades = getUpgradeModels()
 
                 for _, model in ipairs(upgrades) do
                     local costLabel = getCostLabel(model)
-                    local button = getButton(model)
+                    local upgradeId = model.Name
 
-                    if costLabel and button and costLabel.Text ~= "[MAX]" then
-                        hrp.CFrame = button.CFrame + Vector3.new(0, 3, 0)
-
+                    if costLabel and costLabel.Text ~= "[MAX]" then
+                        -- spam BuyUpgrade until maxed
                         while autoUpgrade and costLabel and costLabel.Text ~= "[MAX]" do
-                            task.wait(0.2)
+                            BuyUpgrade:FireServer(upgradeId)
+                            task.wait(0.15)
                         end
                     end
                 end
