@@ -1,7 +1,10 @@
 local Theme = {}
 
-function Theme.getTheme()
-    return Rayfield and Rayfield.Themes.Dark or "Default"
+function Theme.getTheme(Rayfield)
+    if Rayfield and Rayfield.Themes then
+        return Rayfield.Themes.Dark
+    end
+    return "Default"
 end
 
 return Theme

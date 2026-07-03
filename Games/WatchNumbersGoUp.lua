@@ -2,12 +2,10 @@ local WatchNumbersGoUp = {}
 
 local Utils = require(script.Parent.Parent.Core.Utils)
 
-function WatchNumbersGoUp.build(tab, ui, config)
-    Utils.fullRefreshFlag()
+WatchNumbersGoUp.GameId = 0 -- put the actual PlaceId here
 
-    local Players = game:GetService("Players")
-    local Workspace = game:GetService("Workspace")
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+function WatchNumbersGoUp.build(tab, ui, Rayfield)
+    Utils.fullRefreshFlag()
 
     local SAFE_KEYWORDS = {
         "upgrade","buy","roll","rune","gem","merge","combine","equip",
@@ -87,7 +85,7 @@ function WatchNumbersGoUp.build(tab, ui, config)
     local CategoryStates = {}
     for categoryName, remotes in pairs(Categories) do
         CategoryStates[categoryName] = false
-        ui.Toggle(tab, "Auto " .. categoryName, false, function(v)
+        ui.Toggle(tab, "Auto "..categoryName, false, function(v)
             CategoryStates[categoryName] = v
         end)
     end

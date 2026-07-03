@@ -1,18 +1,13 @@
-local GamesTabModule = {}
+local GamesTab = {}
 
-function GamesTabModule.build(tab, ui, Rayfield)
-    local BallGame      = require(script.Parent.Parent.Games.BallGame)
-    local WatchNumbers  = require(script.Parent.Parent.Games.WatchNumbersGoUp)
+function GamesTab.build(tab, ui, Rayfield, SelectedGame)
+    if not SelectedGame then
+        ui.Label(tab, "Unsupported Game")
+        return
+    end
 
-    ui.Label(tab, "Games")
-
-    ui.Button(tab, "Ball Game", function()
-        BallGame.build(tab, ui, { Rayfield = Rayfield })
-    end)
-
-    ui.Button(tab, "Watch Numbers Go Up", function()
-        WatchNumbers.build(tab, ui, { Rayfield = Rayfield })
-    end)
+    ui.Label(tab, "Loaded Game Module")
+    SelectedGame.build(tab, ui, Rayfield)
 end
 
-return GamesTabModule
+return GamesTab
